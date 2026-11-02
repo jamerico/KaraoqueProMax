@@ -6,7 +6,7 @@ namespace KaraokePlayer;
 
 public sealed class Settings
 {
-    public List<string> Folders { get; set; } = [@"D:\banda_decrypted", @"D:\tradicionais_decrypted"];
+    public List<string> Folders { get; set; } = [];   // chosen in the app ("Pastas das músicas"); auto-detected on first run
     public string? MicId { get; set; }
     public double ExtraLatency { get; set; } = 0;   // extra reaction delay on top of the measured speaker→mic delay
     public double MusicVolume { get; set; } = 80;

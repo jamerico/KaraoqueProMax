@@ -1,6 +1,6 @@
 ; Inno Setup script for Karaokê — builds installer\KaraokeSetup.exe from ..\dist (self-contained .NET + VLC + ffmpeg)
 #define AppName "Karaokê"
-#define AppVersion "1.0"
+#define AppVersion "1.1"
 
 [Setup]
 AppId={{6B2E8F7A-3C1D-4E59-9A0B-KARAOKEJEAN01}

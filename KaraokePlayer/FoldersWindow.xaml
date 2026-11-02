@@ -1,0 +1,25 @@
+<Window x:Class="KaraokePlayer.FoldersWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pastas das músicas" Width="720" Height="420" Background="#FF15151C" Foreground="White" FontSize="15"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResize" ShowInTaskbar="False">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#FF2C2C3A"/><Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF44445A"/><Setter Property="Padding" Value="14,6"/><Setter Property="Margin" Value="4"/>
+        </Style>
+    </Window.Resources>
+    <DockPanel Margin="14">
+        <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Foreground="#FFB0B8D0" Margin="0,0,0,10"
+                   Text="As músicas podem estar em qualquer pasta (e subpastas): vídeos .avi, .mp4, .mkv, .mpg… Se a pasta tiver um arquivo _catalogo.csv, os nomes vêm dele; senão, do nome de cada arquivo (“Artista - Música”)."/>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Content="Cancelar" IsCancel="True"/>
+            <Button Content="Salvar" IsDefault="True" FontWeight="Bold" Click="Save_Click"/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Right" Margin="10,0,0,0">
+            <Button Content="+ Adicionar pasta…" Click="Add_Click"/>
+            <Button Content="Remover" Click="Remove_Click"/>
+        </StackPanel>
+        <ListBox x:Name="List" Background="#FF1C1C25" Foreground="White" BorderBrush="#FF33334A"/>
+    </DockPanel>
+</Window>

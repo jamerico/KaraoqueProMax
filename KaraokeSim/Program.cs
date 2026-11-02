@@ -5,6 +5,13 @@
 //   KaraokeSim --song <video> --make good|random|offbeat|silent [--bleed 0.25] --out <wav>
 var opt = new Dictionary<string, string>();
 for (int i = 0; i + 1 < args.Length; i += 2) opt[args[i].TrimStart('-')] = args[i + 1];
+if (opt.TryGetValue("catalog", out var catFolder))
+{   // KaraokeSim --catalog <folder>: what the player would list for that folder
+    var cat = Catalog.Load([catFolder]);
+    Console.WriteLine($"{cat.Songs.Count} songs");
+    foreach (var song0 in cat.Songs.Take(20)) Console.WriteLine($"  [{song0.Code}] {song0.Artist} | {song0.Title}   ({Path.GetFileName(song0.Path)})");
+    return;
+}
 if (!opt.TryGetValue("song", out var song)) { Console.WriteLine("usage: --song <video> (--mic <audio> | --make <kind> --out <wav>)"); return; }
 
 var sw = System.Diagnostics.Stopwatch.StartNew();

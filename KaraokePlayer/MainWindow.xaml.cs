@@ -90,29 +90,24 @@ public partial class MainWindow : Window
         Log("ready");
     }
 
-    /// <summary>Loads the song folders; if none of the configured ones exist (another PC, different drive letter),
-    /// looks for banda_decrypted / tradicionais_decrypted at the root of every drive.</summary>
+    /// <summary>Loads the song folders. When none of the configured folders exists (first run, another PC, a different
+    /// drive letter), looks for song folders with a catalog file at the top level of every drive and in Videos\Karaoke.</summary>
     void LoadCatalog(bool firstRun)
     {
         ResultCount.Text = "Carregando catálogo…";
         Task.Run(() =>
         {
-            static bool Has(string f) => File.Exists(Path.Combine(f, "_catalogo.csv"));
-            if (!_set.Folders.Any(Has))
+            if (!_set.Folders.Any(Directory.Exists))
             {
                 var found = new List<string>();
+                var candidates = new List<string> { Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "Karaoke") };
                 foreach (var d in DriveInfo.GetDrives())
                 {
-                    try
-                    {
-                        if (!d.IsReady) continue;
-                        foreach (var name in new[] { "banda_decrypted", "tradicionais_decrypted" })
-                        {
-                            var f = Path.Combine(d.RootDirectory.FullName, name);
-                            if (Has(f)) found.Add(f);
-                        }
-                    }
-                    catch { }
+                    try { if (d.IsReady) candidates.AddRange(Directory.GetDirectories(d.RootDirectory.FullName)); } catch { }
+                }
+                foreach (var f in candidates)
+                {
+                    try { if (File.Exists(Path.Combine(f, Catalog.CatalogFile)) || f.EndsWith(@"\Karaoke") && Directory.Exists(f)) found.Add(f); } catch { }
                 }
                 if (found.Count > 0) { _set.Folders = found; _set.Save(); }
             }
@@ -121,8 +116,8 @@ public partial class MainWindow : Window
         {
             _cat = t.Result;
             ResultCount.Text = _cat.Songs.Count > 0
-                ? $"{_cat.Songs.Count:N0} músicas. Digite parte do nome."
-                : "Nenhuma música encontrada. Clique em “📁 Pastas das músicas” e escolha as pastas banda_decrypted / tradicionais_decrypted.";
+                ? $"{_cat.Songs.Count:N0} músicas em {_set.Folders.Count} pasta(s). Digite parte do nome."
+                : "Nenhuma música encontrada. Clique em “📁 Pastas das músicas” e adicione as pastas com os vídeos.";
             SearchBox.Focus();
             if (!firstRun) return;
             var args = Environment.GetCommandLineArgs();
@@ -133,19 +128,9 @@ public partial class MainWindow : Window
 
     void Folders_Click(object sender, RoutedEventArgs e)
     {
-        var dlg = new Microsoft.Win32.OpenFolderDialog
-        {
-            Title = "Escolha as pastas das músicas (pode selecionar mais de uma, com Ctrl)",
-            Multiselect = true,
-        };
-        if (dlg.ShowDialog(this) != true) return;
-        var chosen = dlg.FolderNames.Where(f => File.Exists(Path.Combine(f, "_catalogo.csv"))).ToList();
-        if (chosen.Count == 0)
-        {
-            MessageBox.Show(this, "Essas pastas não têm o arquivo _catalogo.csv.\nEscolha as pastas banda_decrypted e/ou tradicionais_decrypted.", "Karaokê");
-            return;
-        }
-        _set.Folders = chosen; _set.Save();
+        var dlg = new FoldersWindow(_set.Folders) { Owner = this };
+        if (dlg.ShowDialog() != true) return;
+        _set.Folders = dlg.Folders; _set.Save();
         LoadCatalog(firstRun: false);
     }
 

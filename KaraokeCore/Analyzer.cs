@@ -11,8 +11,14 @@ public static class Analyzer
 
     public static string CacheDir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KaraokePlayer", "cache");
 
-    public static string CachePath(string video) =>
-        System.IO.Path.Combine(CacheDir, System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(video)!) + "_" + System.IO.Path.GetFileNameWithoutExtension(video).Split(' ')[0] + ".kpa");
+    /// <summary>One cache file per video: readable prefix + hash of the full path and size (any folder layout, no collisions).</summary>
+    public static string CachePath(string video)
+    {
+        long size = File.Exists(video) ? new FileInfo(video).Length : 0;
+        var hash = System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(video.ToLowerInvariant() + "|" + size));
+        var stem = new string(System.IO.Path.GetFileNameWithoutExtension(video).Take(40).Select(ch => char.IsLetterOrDigit(ch) ? ch : '_').ToArray());
+        return System.IO.Path.Combine(CacheDir, $"{stem}_{Convert.ToHexString(hash, 0, 6)}.kpa");
+    }
 
     /// <summary>Returns the analysis with its audio part complete; the wipe keeps filling in on a background task unless cached.</summary>
     public static async Task<SongAnalysis> AnalyzeAsync(string video, CancellationToken ct = default)
