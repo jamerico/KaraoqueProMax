@@ -1,0 +1,100 @@
+<Window x:Class="KaraokePlayer.StageWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vlc="clr-namespace:LibVLCSharp.WPF;assembly=LibVLCSharp.WPF"
+        Title="Karaokê" Background="Black" Width="960" Height="540" WindowStyle="None" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" ShowInTaskbar="True">
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="Bar">
+            <Setter Property="Background" Value="#FF2C2C3A"/><Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF44445A"/><Setter Property="Padding" Value="14,8"/><Setter Property="Margin" Value="4,0"/>
+            <Setter Property="FontSize" Value="18"/><Setter Property="Cursor" Value="Hand"/><Setter Property="Focusable" Value="False"/>
+        </Style>
+    </Window.Resources>
+    <vlc:VideoView x:Name="Video" Background="Black">
+        <!-- alpha 1 background: the overlay is a layered window, fully transparent pixels would not receive the mouse -->
+        <Grid x:Name="Overlay" Background="#01000000" MouseMove="Overlay_MouseMove">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- pitch strip + live score -->
+            <Grid x:Name="TopBar" Grid.Row="0" Margin="16,12,16,0" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="200"/>
+                </Grid.ColumnDefinitions>
+                <Border CornerRadius="8" ClipToBounds="True" BorderBrush="#40FFFFFF" BorderThickness="1">
+                    <Image x:Name="Strip" Stretch="Fill" Height="130"/>
+                </Border>
+                <Border Grid.Column="1" Margin="12,0,0,0" CornerRadius="8" Background="#B0101018" Padding="12,6">
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock x:Name="SingerText" Foreground="#FFB0C4FF" FontSize="20" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="170"/>
+                        <TextBlock x:Name="LiveScore" Foreground="White" FontSize="56" FontWeight="Bold" HorizontalAlignment="Center" Text="0"/>
+                        <TextBlock x:Name="NoteText" Foreground="#FFCCCCCC" FontSize="18" HorizontalAlignment="Center" Text="—"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- per-line verdict -->
+            <TextBlock x:Name="Verdict" Grid.Row="1" Margin="0,24,0,0" HorizontalAlignment="Center" VerticalAlignment="Top"
+                       FontSize="54" FontWeight="Bold" Foreground="White" Opacity="0" IsHitTestVisible="False">
+                <TextBlock.Effect><DropShadowEffect BlurRadius="12" ShadowDepth="0" Color="Black" Opacity="1"/></TextBlock.Effect>
+            </TextBlock>
+
+            <!-- preparing / result -->
+            <Border x:Name="Panel" Grid.RowSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#E0101018"
+                    CornerRadius="16" Padding="48,32" BorderBrush="#40FFFFFF" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock x:Name="PanelTitle" Foreground="White" FontSize="44" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" Text="Karaokê"/>
+                    <TextBlock x:Name="PanelSub" Foreground="#FFB0C4FF" FontSize="26" HorizontalAlignment="Center" TextAlignment="Center" Margin="0,8,0,0" TextWrapping="Wrap" MaxWidth="900"/>
+                    <StackPanel x:Name="ResultBars" Margin="0,24,0,0" Visibility="Collapsed" Width="560">
+                        <TextBlock x:Name="ResultScore" Foreground="White" FontSize="120" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <Grid Margin="0,8"><TextBlock Text="Afinação" Foreground="White" FontSize="24"/><ProgressBar x:Name="BarA" Height="22" Width="340" HorizontalAlignment="Right" Maximum="1" Foreground="#FF3CE65A" Background="#30FFFFFF" BorderThickness="0"/></Grid>
+                        <Grid Margin="0,8"><TextBlock Text="Ritmo" Foreground="White" FontSize="24"/><ProgressBar x:Name="BarR" Height="22" Width="340" HorizontalAlignment="Right" Maximum="1" Foreground="#FFFFB020" Background="#30FFFFFF" BorderThickness="0"/></Grid>
+                        <Grid Margin="0,8"><TextBlock Text="Presença" Foreground="White" FontSize="24"/><ProgressBar x:Name="BarP" Height="22" Width="340" HorizontalAlignment="Right" Maximum="1" Foreground="#FF5AA0FF" Background="#30FFFFFF" BorderThickness="0"/></Grid>
+                        <TextBlock x:Name="ResultNext" Foreground="#FFCCCCCC" FontSize="22" HorizontalAlignment="Center" Margin="0,16,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,16,0,0">
+                            <Button x:Name="NextNowButton" Style="{StaticResource Bar}" Content="▶ Próxima agora" Click="NextNow_Click"/>
+                            <Button Style="{StaticResource Bar}" Content="☰ Voltar à lista" Click="Back_Click"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- media controls (auto-hide) -->
+            <Border x:Name="Controls" Grid.Row="2" Background="#D0101018" Padding="16,10" Visibility="Collapsed">
+                <StackPanel>
+                    <DockPanel>
+                        <TextBlock x:Name="TimeText" DockPanel.Dock="Right" Foreground="White" FontSize="16" Margin="12,0,0,0" VerticalAlignment="Center" Text="0:00 / 0:00"/>
+                        <Slider x:Name="Seek" Maximum="1" IsMoveToPointEnabled="True" VerticalAlignment="Center" Focusable="False"
+                                PreviewMouseUp="Seek_PreviewMouseUp"/>
+                    </DockPanel>
+                    <DockPanel Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                            <Button x:Name="PauseButton" Style="{StaticResource Bar}" Content="⏸ Pausar" Click="Pause_Click"/>
+                            <Button Style="{StaticResource Bar}" Content="⏭ Próxima" Click="Next_Click"/>
+                            <Button Style="{StaticResource Bar}" Content="⏹ Parar" Click="Back_Click"/>
+                            <TextBlock Text="Tom" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="16,0,4,0"/>
+                            <Button Style="{StaticResource Bar}" Content="−" Click="KeyDown_Click"/>
+                            <TextBlock x:Name="KeyText" Text="0" Foreground="White" FontSize="18" FontWeight="Bold" Width="30" TextAlignment="Center" VerticalAlignment="Center"/>
+                            <Button Style="{StaticResource Bar}" Content="+" Click="KeyUp_Click"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" DockPanel.Dock="Right" VerticalAlignment="Center">
+                            <TextBlock Text="🎤" FontSize="18" Foreground="White" VerticalAlignment="Center" Margin="12,0,6,0"/>
+                            <ProgressBar x:Name="MicLevel" Width="90" Height="10" Maximum="60" Foreground="#FF3CE65A" Background="#30FFFFFF" BorderThickness="0"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                            <TextBlock Text="🔊" FontSize="18" Foreground="White" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <Slider x:Name="Volume" Width="140" Minimum="0" Maximum="100" VerticalAlignment="Center" Focusable="False" ValueChanged="Volume_ValueChanged"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBlock Foreground="#FF8088A0" FontSize="12" Margin="4,6,0,0"
+                               Text="Espaço: pausar · N: próxima · Esc: voltar à lista · + / −: tom · ↑ / ↓: volume"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </vlc:VideoView>
+</Window>

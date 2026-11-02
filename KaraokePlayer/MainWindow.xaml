@@ -1,0 +1,97 @@
+﻿<Window x:Class="KaraokePlayer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Karaokê" Width="1200" Height="760" Background="#FF15151C" Foreground="White" FontSize="15">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="#FF2C2C3A"/><Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF44445A"/><Setter Property="Padding" Value="14,8"/><Setter Property="Margin" Value="4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#FF22222C"/><Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF44445A"/><Setter Property="Padding" Value="8,6"/><Setter Property="CaretBrush" Value="White"/>
+        </Style>
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="#FF1C1C25"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="#FF33334A"/>
+        </Style>
+        <Style TargetType="ListView">
+            <Setter Property="Background" Value="#FF1C1C25"/><Setter Property="Foreground" Value="White"/><Setter Property="BorderBrush" Value="#FF33334A"/>
+        </Style>
+        <Style TargetType="TextBlock" x:Key="Head"><Setter Property="FontSize" Value="13"/><Setter Property="Foreground" Value="#FF9AA0C0"/><Setter Property="Margin" Value="4,12,4,4"/></Style>
+    </Window.Resources>
+
+    <Grid Margin="12">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- search -->
+        <DockPanel Grid.Column="0" Margin="0,0,12,0">
+            <DockPanel DockPanel.Dock="Top">
+                <Button DockPanel.Dock="Right" Content="📁 Pastas das músicas" Click="Folders_Click" Padding="10,2" Margin="0,0,0,4" FontSize="13"/>
+                <TextBlock Style="{StaticResource Head}" Text="BUSCAR MÚSICA (nome, artista ou código)" Margin="4,0,4,4" VerticalAlignment="Bottom"/>
+            </DockPanel>
+            <TextBox x:Name="SearchBox" DockPanel.Dock="Top" FontSize="24" TextChanged="SearchBox_TextChanged" PreviewKeyDown="SearchBox_PreviewKeyDown"/>
+            <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                <TextBlock Text="Quem vai cantar?" VerticalAlignment="Center" Margin="4,0,8,0"/>
+                <Button DockPanel.Dock="Right" Content="▶ Cantar agora" Click="SingNow_Click" FontWeight="Bold"/>
+                <Button DockPanel.Dock="Right" Content="+ Adicionar à fila" Click="AddQueue_Click"/>
+                <TextBox x:Name="SingerBox" FontSize="18"/>
+            </DockPanel>
+            <TextBlock x:Name="ResultCount" DockPanel.Dock="Bottom" Foreground="#FF9AA0C0" Margin="4,6,4,0"/>
+            <ListView x:Name="Results" Margin="0,8,0,0" MouseDoubleClick="Results_MouseDoubleClick" KeyDown="Results_KeyDown">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Música" Width="300" DisplayMemberBinding="{Binding Title}"/>
+                        <GridViewColumn Header="Artista" Width="220" DisplayMemberBinding="{Binding Artist}"/>
+                        <GridViewColumn Header="Coleção" Width="100" DisplayMemberBinding="{Binding Collection}"/>
+                        <GridViewColumn Header="Código" Width="70" DisplayMemberBinding="{Binding Code}"/>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </DockPanel>
+
+        <!-- right side -->
+        <DockPanel Grid.Column="1">
+            <Border DockPanel.Dock="Top" Background="#FF1C1C25" CornerRadius="8" Padding="12">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Head}" Text="ÚLTIMO RESULTADO" Margin="0,0,0,4"/>
+                    <DockPanel>
+                        <TextBlock x:Name="LastScore" DockPanel.Dock="Right" FontSize="34" FontWeight="Bold" Text=""/>
+                        <StackPanel>
+                            <TextBlock x:Name="LastTitle" FontSize="18" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Text="—"/>
+                            <TextBlock x:Name="LastDetail" Foreground="#FF9AA0C0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <Border DockPanel.Dock="Bottom" Background="#FF1C1C25" CornerRadius="8" Padding="12" Margin="0,8,0,0">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource Head}" Text="MICROFONE" Margin="0,0,0,4"/>
+                    <ComboBox x:Name="MicBox" DisplayMemberPath="Name" SelectionChanged="MicBox_SelectionChanged"/>
+                    <DockPanel Margin="0,6,0,0">
+                        <TextBlock x:Name="MicNote" DockPanel.Dock="Right" Width="60" TextAlignment="Right" FontWeight="Bold" Text="—"/>
+                        <ProgressBar x:Name="MicLevel" Height="14" Maximum="60" Foreground="#FF3CE65A" Background="#30FFFFFF" BorderThickness="0"/>
+                    </DockPanel>
+                    <TextBlock Foreground="#FF9AA0C0" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"
+                               Text="Cante uma nota: a barra deve subir e a nota aparecer à direita. Com o microfone do notebook, deixe as caixas de som longe dele."/>
+                </StackPanel>
+            </Border>
+
+            <Grid Margin="0,8,0,0">
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" Content="Remover" Click="RemoveQueue_Click" Padding="8,2" Margin="4,0,0,0"/>
+                    <Button DockPanel.Dock="Right" Content="▶ Começar a fila" Click="StartQueue_Click" Padding="8,2" Margin="0" FontWeight="Bold"/>
+                    <TextBlock Style="{StaticResource Head}" Text="FILA"/>
+                </DockPanel>
+                <ListBox x:Name="QueueList" Grid.Row="1" DisplayMemberPath="Line"/>
+                <TextBlock Grid.Row="2" Style="{StaticResource Head}" Text="PLACAR DA NOITE"/>
+                <ListBox x:Name="Board" Grid.Row="3" DisplayMemberPath="Line" FontFamily="Consolas"/>
+            </Grid>
+        </DockPanel>
+    </Grid>
+</Window>
